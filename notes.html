@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grade Submission</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --accent2: #3fb950;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --danger: #f85149;
+  }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container { max-width: 640px; margin: 0 auto; }
+
+  header { text-align: center; margin-bottom: 2.5rem; }
+  header h1 { font-size: 1.6rem; font-weight: 600; color: var(--accent); letter-spacing: -0.5px; }
+  header p { color: var(--muted); font-size: 0.9rem; margin-top: 0.4rem; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.8rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .card h2 {
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-bottom: 1.4rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .subjects-grid { display: grid; gap: 0.9rem; }
+  .subject-row { display: flex; align-items: center; gap: 1rem; }
+  .subject-name { flex: 1; font-size: 0.9rem; color: var(--text); }
+
+  input[type="number"] {
+    width: 90px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 0.5rem 0.7rem;
+    text-align: center;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input[type="number"]:focus { outline: none; border-color: var(--accent); }
+  input[type="number"].invalid { border-color: var(--danger); }
+
+  .divider { height: 1px; background: var(--border); margin: 0.6rem 0; }
+
+  button.submit-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #0d1117;
+    border: none;
+    border-radius: 8px;
+    padding: 0.85rem;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    margin-top: 0.5rem;
+  }
+  button.submit-btn:hover { opacity: 0.88; }
+  button.submit-btn:active { transform: scale(0.98); }
+  button.submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .msg {
+    text-align: center;
+    padding: 0.8rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    display: none;
+  }
+  .msg.success { background: #1a2e1a; color: var(--accent2); border: 1px solid #2ea04326; display: block; }
+  .msg.error { background: #2d1a1a; color: var(--danger); border: 1px solid #f8514926; display: block; }
+
+  #adminPage { display: none; }
+
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem; }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+  }
+  .stat-card .val { font-size: 2rem; font-weight: 600; color: var(--accent); }
+  .stat-card .val.green { color: var(--accent2); }
+  .stat-card .lbl { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  thead th {
+    color: var(--muted);
+    font-weight: 500;
+    padding: 0.5rem 0.6rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody td { padding: 0.55rem 0.6rem; border-bottom: 1px solid #1c2128; color: var(--text); }
+  tbody tr:hover td { background: #1c2128; }
+
+  .subject-avgs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .avg-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82rem;
+  }
+  .avg-item .avg-val { font-weight: 600; color: var(--accent); }
+
+  .nav-btns { display: flex; gap: 0.8rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .nav-btn {
+    padding: 0.5rem 1.2rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .nav-btn.active, .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .refresh-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 0.4rem 0.9rem;
+    font-family: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    transition: color 0.2s;
+  }
+  .refresh-btn:hover { color: var(--text); }
+
+  .loading { color: var(--muted); text-align: center; padding: 2rem; font-size: 0.9rem; }
+
+  #secretInput {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+    width: 100%;
+    margin-bottom: 0.8rem;
+  }
+  #secretInput:focus { outline: none; border-color: var(--accent); }
+
+  @media (max-width: 500px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .subject-avgs { grid-template-columns: 1fr; }
+    table { font-size: 0.72rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- STUDENT PAGE -->
+<div id="studentPage" class="container">
+  <header>
+    <h1>📊 Grade Submission</h1>
+    <p>Enter your grade for each subject and press Submit</p>
+  </header>
+
+  <div class="card">
+    <h2>Subjects</h2>
+    <div class="subjects-grid" id="subjectsGrid"></div>
+  </div>
+
+  <button class="submit-btn" id="submitBtn" onclick="submitGrades()">Submit Grades</button>
+  <div class="msg" id="msg"></div>
+
+  <div style="text-align:center; margin-top:2rem;">
+    <button onclick="showAdminLogin()" style="background:none;border:none;color:var(--muted);font-family:inherit;font-size:0.78rem;cursor:pointer;text-decoration:underline;">
+      Admin Login
+    </button>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div id="adminLogin" class="container" style="display:none;">
+  <div class="card" style="margin-top:4rem;">
+    <h2>Admin Login</h2>
+    <input type="password" id="secretInput" placeholder="Password">
+    <button class="submit-btn" onclick="checkAdmin()">Login</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<!-- ADMIN PAGE -->
+<div id="adminPage" class="container">
+  <header>
+    <h1>📈 Admin Dashboard</h1>
+  </header>
+
+  <div class="nav-btns">
+    <button class="nav-btn active" onclick="showTab('overview', this)">Overview</button>
+    <button class="nav-btn" onclick="showTab('details', this)">Student Details</button>
+    <button class="nav-btn" onclick="showTab('subjects', this)">Subject Averages</button>
+  </div>
+
+  <button class="refresh-btn" onclick="loadAdminData()">🔄 Refresh Data</button>
+
+  <div id="tab-overview">
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="val" id="totalStudents">—</div>
+        <div class="lbl">Students Submitted</div>
+      </div>
+      <div class="stat-card">
+        <div class="val green" id="overallAvg">—</div>
+        <div class="lbl">Overall Batch Average</div>
+      </div>
+      <div class="stat-card" style="grid-column: 1 / -1;">
+        <div class="val green" id="eliminationScore">—</div>
+        <div class="lbl">Elimination Score (Average × 0.6)</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-details" style="display:none;">
+    <div class="card" style="overflow-x:auto;">
+      <div id="tableContainer" class="loading">Loading...</div>
+    </div>
+  </div>
+
+  <div id="tab-subjects" style="display:none;">
+    <div class="card">
+      <h2>Average per Subject</h2>
+      <div class="subject-avgs" id="subjectAvgs">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin-top:2rem;">
+    <button onclick="logout()" style="background:none;border:none;color:var(--muted);font-family:inherit;font-size:0.78rem;cursor:pointer;text-decoration:underline;">
+      Logout
+    </button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyChKq_XbmInjO_J_TxQSi9EOIpGU0_C_Ag",
+    authDomain: "notes-project-b8189.firebaseapp.com",
+    projectId: "notes-project-b8189",
+    storageBucket: "notes-project-b8189.firebasestorage.app",
+    messagingSenderId: "798391615081",
+    appId: "1:798391615081:web:80895d9f72b5b3107f6cf8"
+  };
+
+  const ADMIN_PASSWORD = "admin123"; // Change this password
+
+  const SUBJECTS = [
+    "Network Fundamentals",
+    "ALSDS",
+    "Algebra 1",
+    "Mathematical Analysis 1",
+    "Electricity",
+    "Operating Systems 1",
+    "Architecture of Computer 1",
+    "English 1",
+    "Citizenship",
+    "History of Algeria"
+  ];
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Build student form
+  const grid = document.getElementById('subjectsGrid');
+  SUBJECTS.forEach((sub, i) => {
+    grid.innerHTML += `
+      <div class="subject-row">
+        <div class="subject-name">${sub}</div>
+        <input type="number" id="s${i}" min="0" max="20" step="0.25" placeholder="0–20">
+      </div>
+      ${i < SUBJECTS.length - 1 ? '<div class="divider"></div>' : ''}
+    `;
+  });
+
+  window.submitGrades = async () => {
+    const grades = {};
+    let valid = true;
+
+    SUBJECTS.forEach((sub, i) => {
+      const inp = document.getElementById(`s${i}`);
+      const val = parseFloat(inp.value);
+      inp.classList.remove('invalid');
+      // FIX: corrected broken condition (was missing || operators)
+      if (inp.value === '' || isNaN(val) || val < 0 || val > 20) {
+        inp.classList.add('invalid');
+        valid = false;
+      } else {
+        grades[sub] = val;
+      }
+    });
+
+    if (!valid) {
+      showMsg('msg', 'Please enter all grades between 0 and 20.', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    try {
+      await addDoc(collection(db, 'grades'), { grades, timestamp: serverTimestamp() });
+      showMsg('msg', '✅ Grades submitted successfully!', 'success');
+      SUBJECTS.forEach((_, i) => { document.getElementById(`s${i}`).value = ''; });
+    } catch (e) {
+      showMsg('msg', 'An error occurred. Please try again.', 'error');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Submit Grades';
+  };
+
+  window.showAdminLogin = () => {
+    document.getElementById('studentPage').style.display = 'none';
+    document.getElementById('adminLogin').style.display = 'block';
+  };
+
+  window.checkAdmin = () => {
+    const pw = document.getElementById('secretInput').value;
+    if (pw === ADMIN_PASSWORD) {
+      document.getElementById('adminLogin').style.display = 'none';
+      document.getElementById('adminPage').style.display = 'block';
+      loadAdminData();
+    } else {
+      showMsg('loginMsg', 'Incorrect password.', 'error');
+    }
+  };
+
+  window.logout = () => {
+    document.getElementById('adminPage').style.display = 'none';
+    document.getElementById('studentPage').style.display = 'block';
+  };
+
+  window.loadAdminData = async () => {
+    try {
+      const snap = await getDocs(collection(db, 'grades'));
+      const records = [];
+      snap.forEach(doc => records.push(doc.data()));
+
+      const n = records.length;
+      document.getElementById('totalStudents').textContent = n;
+
+      if (n === 0) {
+        document.getElementById('overallAvg').textContent = '—';
+        document.getElementById('eliminationScore').textContent = '—';
+        document.getElementById('tableContainer').innerHTML = '<div class="loading">No data yet.</div>';
+        document.getElementById('subjectAvgs').innerHTML = '<div class="loading">No data yet.</div>';
+        return;
+      }
+
+      const subjectTotals = {};
+      SUBJECTS.forEach(s => subjectTotals[s] = 0);
+      records.forEach(r => { SUBJECTS.forEach(s => { subjectTotals[s] += (r.grades[s] || 0); }); });
+
+      const subjectAvgs = {};
+      let grandTotal = 0;
+      SUBJECTS.forEach(s => {
+        subjectAvgs[s] = subjectTotals[s] / n;
+        grandTotal += subjectAvgs[s];
+      });
+
+      const overallAvg = grandTotal / SUBJECTS.length;
+      const elimination = overallAvg * 0.6;
+
+      document.getElementById('overallAvg').textContent = overallAvg.toFixed(2);
+      document.getElementById('eliminationScore').textContent = elimination.toFixed(2);
+
+      // FIX: restored proper template literals for table building
+      let tableHTML = `<table><thead><tr><th>#</th>`;
+      SUBJECTS.forEach(s => tableHTML += `<th>${s.split(' ')[0]}</th>`);
+      tableHTML += `<th>Avg</th></tr></thead><tbody>`;
+      records.forEach((r, idx) => {
+        let rowTotal = 0;
+        SUBJECTS.forEach(s => rowTotal += (r.grades[s] || 0));
+        const rowAvg = rowTotal / SUBJECTS.length;
+        tableHTML += `<tr><td>${idx + 1}</td>`;
+        SUBJECTS.forEach(s => tableHTML += `<td>${(r.grades[s] || 0).toFixed(2)}</td>`);
+        tableHTML += `<td><strong>${rowAvg.toFixed(2)}</strong></td></tr>`;
+      });
+      tableHTML += '</tbody></table>';
+      document.getElementById('tableContainer').innerHTML = tableHTML;
+
+      // Subject averages
+      let avgsHTML = '';
+      SUBJECTS.forEach(s => {
+        avgsHTML += `<div class="avg-item"><span>${s}</span><span class="avg-val">${subjectAvgs[s].toFixed(2)}</span></div>`;
+      });
+      document.getElementById('subjectAvgs').innerHTML = avgsHTML;
+
+    } catch (e) { console.error(e); }
+  };
+
+  window.showTab = (tab, btn) => {
+    ['overview', 'details', 'subjects'].forEach(t => {
+      document.getElementById(`tab-${t}`).style.display = t === tab ? 'block' : 'none';
+    });
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  };
+
+  // FIX: restored template literal in className assignment
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = `msg ${type}`;
+  }
+</script>
+</body>
+</html>
