@@ -181,6 +181,82 @@
   .msg.error { background: rgba(255,71,87,0.08); color: var(--danger); border: 1px solid rgba(255,71,87,0.2); display: block; }
   .msg.warn { background: rgba(255,167,38,0.08); color: var(--warn); border: 1px solid rgba(255,167,38,0.2); display: block; }
 
+  /* Elimination results panel — shown after submit */
+  #elimPanel {
+    display: none;
+    animation: fadeIn 0.4s ease forwards;
+  }
+
+  .elim-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .promo-avg-badge {
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.25);
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .promo-avg-badge span {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-left: 0.4rem;
+  }
+
+  .elim-threshold-badge {
+    background: rgba(255,107,53,0.08);
+    border: 1px solid rgba(255,107,53,0.25);
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .elim-threshold-badge span {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--accent3);
+    margin-left: 0.4rem;
+  }
+
+  .elim-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+  .elim-table thead th {
+    color: var(--muted);
+    font-weight: 500;
+    padding: 0.5rem 0.7rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.62rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .elim-table tbody td {
+    padding: 0.6rem 0.7rem;
+    border-bottom: 1px solid #111820;
+    color: var(--text);
+    transition: background 0.15s;
+  }
+  .elim-table tbody tr:last-child td { border-bottom: none; }
+  .elim-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
+  .elim-avg { color: var(--accent2); font-weight: 700; }
+  .elim-score { color: var(--accent3); font-weight: 700; }
+  .elim-coeff { color: var(--accent); }
+
+  .students-count {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-bottom: 0.8rem;
+  }
+
   /* Admin */
   #adminPage { display: none; }
 
@@ -326,6 +402,7 @@
   @media (max-width: 500px) {
     .stats-grid { grid-template-columns: 1fr; }
     .stat-card.full { grid-column: 1; }
+    .elim-header { flex-direction: column; }
   }
 
   @keyframes fadeIn {
@@ -352,6 +429,30 @@
 
   <button class="submit-btn" id="submitBtn" onclick="submitGrades()">Submit Grades →</button>
   <div class="msg" id="msg"></div>
+
+  <!-- ELIMINATION RESULTS — shown after submit -->
+  <div id="elimPanel">
+    <div class="card" style="margin-top:1rem;">
+      <div class="card-title">Promo Elimination Thresholds</div>
+      <div class="elim-header">
+        <div class="promo-avg-badge">Moyenne Générale Promo<span id="promoAvgVal">—</span>/20</div>
+        <div class="elim-threshold-badge">Seuil Global (×0.6)<span id="promoElimVal">—</span></div>
+      </div>
+      <div class="students-count" id="studentsCountLabel"></div>
+      <table class="elim-table">
+        <thead>
+          <tr>
+            <th>Module</th>
+            <th>Coeff</th>
+            <th>Moy. Promo</th>
+            <th>Seuil Élim (×0.6)</th>
+          </tr>
+        </thead>
+        <tbody id="elimTableBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
 
   <div style="text-align:center; margin-top:2rem;">
     <button onclick="showAdminLogin()" class="footer-link">Admin Login</button>
@@ -452,7 +553,6 @@
 
   const ADMIN_PASSWORD = "admin123";
 
-  // Subjects with coefficients
   const SUBJECTS = [
     { name: "Network Fundamentals", key: "net",     coeff: 5 },
     { name: "ALSDS",                key: "alsds",   coeff: 5 },
@@ -492,28 +592,73 @@
     return total / TOTAL_COEFFS;
   }
 
-  // Check if already submitted on page load
+  // Fetch promo stats and populate the elimination panel
+  async function loadElimPanel() {
+    try {
+      const snap = await getDocs(collection(db, 'grades'));
+      const records = [];
+      snap.forEach(doc => records.push(doc.data()));
+
+      const n = records.length;
+      if (n === 0) return;
+
+      const subTotals = {};
+      SUBJECTS.forEach(s => subTotals[s.key] = 0);
+      records.forEach(r => {
+        SUBJECTS.forEach(s => { subTotals[s.key] += (r.grades[s.key] || 0); });
+      });
+
+      const subAvgs = {};
+      SUBJECTS.forEach(s => { subAvgs[s.key] = subTotals[s.key] / n; });
+
+      let weightedTotal = 0;
+      SUBJECTS.forEach(s => { weightedTotal += subAvgs[s.key] * s.coeff; });
+      const promoAvg = weightedTotal / TOTAL_COEFFS;
+      const promoElim = promoAvg * 0.6;
+
+      document.getElementById('promoAvgVal').textContent = promoAvg.toFixed(2);
+      document.getElementById('promoElimVal').textContent = promoElim.toFixed(2);
+      document.getElementById('studentsCountLabel').textContent = `Based on ${n} submission${n > 1 ? 's' : ''} — updates live as more students submit`;
+
+      let rows = '';
+      SUBJECTS.forEach(s => {
+        const avg = subAvgs[s.key];
+        const elim = avg * 0.6;
+        rows += `
+          <tr>
+            <td>${s.name}</td>
+            <td class="elim-coeff">${s.coeff}</td>
+            <td class="elim-avg">${avg.toFixed(2)}</td>
+            <td class="elim-score">${elim.toFixed(2)}</td>
+          </tr>
+        `;
+      });
+      document.getElementById('elimTableBody').innerHTML = rows;
+      document.getElementById('elimPanel').style.display = 'block';
+    } catch (e) { console.error('Failed to load elim panel:', e); }
+  }
+
+  // On page load: check if already submitted
   window.addEventListener('load', () => {
     if (localStorage.getItem('grades_submitted')) {
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
       btn.textContent = 'Already Submitted ✓';
       showMsg('msg', '✅ You have already submitted your grades from this device.', 'success');
-      // Lock all inputs
       SUBJECTS.forEach((_, i) => {
         document.getElementById(`s${i}`).disabled = true;
       });
+      // Show the elimination panel immediately
+      loadElimPanel();
     }
   });
 
   window.submitGrades = async () => {
-    // Double-check localStorage
     if (localStorage.getItem('grades_submitted')) {
       showMsg('msg', '⚠️ You have already submitted your grades from this device.', 'warn');
       return;
     }
 
-    // Validate grades
     const grades = {};
     let valid = true;
 
@@ -545,14 +690,14 @@
         weightedAvg: avg,
         timestamp: serverTimestamp()
       });
-      // Mark as submitted in localStorage
       localStorage.setItem('grades_submitted', 'true');
       showMsg('msg', `✅ Grades submitted! Your weighted average: ${avg.toFixed(2)}/20`, 'success');
       btn.textContent = 'Already Submitted ✓';
-      // Lock all inputs
       SUBJECTS.forEach((_, i) => {
         document.getElementById(`s${i}`).disabled = true;
       });
+      // Load and show the elimination thresholds after submission
+      await loadElimPanel();
     } catch (e) {
       showMsg('msg', 'An error occurred. Please try again.', 'error');
       btn.disabled = false;
@@ -603,18 +748,15 @@
         return;
       }
 
-      // Per-subject totals
       const subTotals = {};
       SUBJECTS.forEach(s => subTotals[s.key] = 0);
       records.forEach(r => {
         SUBJECTS.forEach(s => { subTotals[s.key] += (r.grades[s.key] || 0); });
       });
 
-      // Per-subject averages & elimination
       const subAvgs = {};
       SUBJECTS.forEach(s => { subAvgs[s.key] = subTotals[s.key] / n; });
 
-      // Overall weighted avg of promo
       let weightedTotal = 0;
       SUBJECTS.forEach(s => { weightedTotal += subAvgs[s.key] * s.coeff; });
       const promoAvg = weightedTotal / TOTAL_COEFFS;
@@ -623,7 +765,6 @@
       document.getElementById('overallAvg').textContent = promoAvg.toFixed(2);
       document.getElementById('eliminationOverall').textContent = promoElim.toFixed(2);
 
-      // Module table
       let moduleRows = '';
       SUBJECTS.forEach(s => {
         const avg = subAvgs[s.key];
@@ -639,7 +780,6 @@
       });
       document.getElementById('moduleTableBody').innerHTML = moduleRows;
 
-      // Student details table
       let tableHTML = `
         <table class="details-table">
           <thead>
@@ -653,7 +793,6 @@
           <tbody>
       `;
 
-      // Sort by weighted avg desc
       const sorted = [...records].sort((a, b) => (b.weightedAvg || 0) - (a.weightedAvg || 0));
 
       sorted.forEach((r, idx) => {
