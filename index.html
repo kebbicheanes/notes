@@ -147,21 +147,6 @@
     box-shadow: 0 0 0 2px rgba(255,71,87,0.1);
   }
 
-  .name-input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.9rem;
-    padding: 0.65rem 1rem;
-    transition: border-color 0.2s;
-    margin-bottom: 0.5rem;
-  }
-  .name-input:focus { outline: none; border-color: var(--accent); }
-  .name-input.invalid { border-color: var(--danger); }
-
   button.submit-btn {
     width: 100%;
     background: var(--accent);
@@ -361,11 +346,6 @@
   </header>
 
   <div class="card">
-    <div class="card-title">Identity</div>
-    <input type="text" class="name-input" id="studentName" placeholder="Full Name (e.g. Ahmed Benali)">
-  </div>
-
-  <div class="card">
     <div class="card-title">Modules & Marks</div>
     <div id="subjectsGrid"></div>
   </div>
@@ -458,7 +438,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp }
+  import { getFirestore, collection, addDoc, getDocs, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -512,24 +492,24 @@
     return total / TOTAL_COEFFS;
   }
 
-  window.submitGrades = async () => {
-    const nameEl = document.getElementById('studentName');
-    const name = nameEl.value.trim();
-
-    // Validate name
-    if (name.length < 2) {
-      nameEl.classList.add('invalid');
-      showMsg('msg', 'Please enter your full name.', 'error');
-      return;
+  // Check if already submitted on page load
+  window.addEventListener('load', () => {
+    if (localStorage.getItem('grades_submitted')) {
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Already Submitted ✓';
+      showMsg('msg', '✅ You have already submitted your grades from this device.', 'success');
+      // Lock all inputs
+      SUBJECTS.forEach((_, i) => {
+        document.getElementById(`s${i}`).disabled = true;
+      });
     }
-    nameEl.classList.remove('invalid');
+  });
 
-    // Check if already submitted
-    const existing = await getDocs(
-      query(collection(db, 'grades'), where('name', '==', name.toLowerCase()))
-    );
-    if (!existing.empty) {
-      showMsg('msg', `⚠️ "${name}" has already submitted grades. Each student can only submit once.`, 'warn');
+  window.submitGrades = async () => {
+    // Double-check localStorage
+    if (localStorage.getItem('grades_submitted')) {
+      showMsg('msg', '⚠️ You have already submitted your grades from this device.', 'warn');
       return;
     }
 
@@ -561,21 +541,23 @@
     try {
       const avg = weightedAvg(grades);
       await addDoc(collection(db, 'grades'), {
-        name: name.toLowerCase(),
-        displayName: name,
         grades,
         weightedAvg: avg,
         timestamp: serverTimestamp()
       });
-      showMsg('msg', `✅ Grades submitted successfully! Your weighted average: ${avg.toFixed(2)}/20`, 'success');
-      SUBJECTS.forEach((_, i) => { document.getElementById(`s${i}`).value = ''; });
-      document.getElementById('studentName').value = '';
+      // Mark as submitted in localStorage
+      localStorage.setItem('grades_submitted', 'true');
+      showMsg('msg', `✅ Grades submitted! Your weighted average: ${avg.toFixed(2)}/20`, 'success');
+      btn.textContent = 'Already Submitted ✓';
+      // Lock all inputs
+      SUBJECTS.forEach((_, i) => {
+        document.getElementById(`s${i}`).disabled = true;
+      });
     } catch (e) {
       showMsg('msg', 'An error occurred. Please try again.', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Submit Grades →';
     }
-
-    btn.disabled = false;
-    btn.textContent = 'Submit Grades →';
   };
 
   window.showAdminLogin = () => {
@@ -663,7 +645,6 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>Name</th>
               ${SUBJECTS.map(s => `<th>${s.key.toUpperCase()}</th>`).join('')}
               <th>Moy. Pond.</th>
               <th>vs Élim</th>
@@ -680,7 +661,6 @@
         const passElim = avg >= promoElim;
         tableHTML += `<tr>
           <td>${idx + 1}</td>
-          <td style="white-space:nowrap;">${r.displayName || r.name}</td>
           ${SUBJECTS.map(s => `<td>${(r.grades[s.key] || 0).toFixed(1)}</td>`).join('')}
           <td><strong style="color:var(--accent2)">${avg.toFixed(2)}</strong></td>
           <td><span class="elim-badge ${passElim ? 'pass' : 'fail'}">${passElim ? '✓ OK' : '✗ ELIM'}</span></td>
