@@ -909,7 +909,7 @@ async function loadElimPanel() {
         <td>${s.name}</td>
         <td class="td-coeff">${s.coeff}</td>
         <td class="td-avg">${avg.toFixed(2)}</td>
-        <td class="td-elim">${(avg * 0.6).toFixed(2)}</td>
+        <td class="td-elim">${Math.min(10, avg * 0.6).toFixed(2)}</td>
       </tr>`;
     });
     document.getElementById('elimTableBody').innerHTML = rows;
