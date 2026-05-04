@@ -3,828 +3,1059 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grade Submission</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<title>NHSCS — Grade Submission</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-  :root {
-    --bg: #080c10;
-    --surface: #0e1419;
-    --surface2: #141c24;
-    --border: #1e2d3d;
-    --accent: #00d4ff;
-    --accent2: #00ff88;
-    --accent3: #ff6b35;
-    --text: #cdd9e5;
-    --muted: #546e7a;
-    --danger: #ff4757;
-    --warn: #ffa726;
-  }
+:root {
+  --bg:       #04080f;
+  --surface:  #070e1a;
+  --glass:    rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.08);
+  --navy:     #0a1628;
+  --blue:     #1a3a6e;
+  --accent:   #c9a84c;
+  --accent2:  #e8c96d;
+  --cyan:     #4db8d4;
+  --text:     #dce8f5;
+  --muted:    #5a7a99;
+  --danger:   #e05252;
+  --success:  #4daa80;
+  --warn:     #d4923a;
+}
 
-  body {
-    font-family: 'JetBrains Mono', monospace;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 2rem 1rem;
-    background-image: 
-      radial-gradient(ellipse at 20% 20%, rgba(0,212,255,0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 80%, rgba(0,255,136,0.03) 0%, transparent 50%);
-  }
+html { scroll-behavior: smooth; }
 
-  .container { max-width: 700px; margin: 0 auto; }
+body {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-  header { 
-    text-align: center; 
-    margin-bottom: 2.5rem;
-    padding: 2rem 0 1.5rem;
-    border-bottom: 1px solid var(--border);
-    position: relative;
-  }
-  header::before {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 2px;
-    background: var(--accent);
-  }
-  header .tag {
-    font-size: 0.65rem;
-    color: var(--accent);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-bottom: 0.6rem;
-  }
-  header h1 { 
-    font-family: 'Syne', sans-serif;
-    font-size: 1.8rem; 
-    font-weight: 800; 
-    color: #fff;
-    letter-spacing: -1px;
-  }
-  header p { color: var(--muted); font-size: 0.78rem; margin-top: 0.5rem; }
+/* ── HERO ── */
+.hero {
+  position: relative;
+  height: 100vh;
+  min-height: 580px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 0 4rem 0;
+  overflow: hidden;
+}
 
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.6rem;
-    margin-bottom: 1rem;
-  }
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 60% 40%, rgba(26,58,110,0.55) 0%, transparent 60%),
+    radial-gradient(ellipse at 10% 80%, rgba(201,168,76,0.12) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(4,8,15,0.1) 0%, rgba(4,8,15,0.85) 70%, var(--bg) 100%),
+    url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1400&q=80&auto=format') center/cover no-repeat;
+  z-index: 0;
+}
 
-  .card-title {
-    font-size: 0.62rem;
-    font-weight: 500;
-    margin-bottom: 1.4rem;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .card-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(4,8,15,0.3) 0%, rgba(4,8,15,0.92) 100%);
+  z-index: 1;
+}
 
-  .subject-row {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    padding: 0.7rem 0;
-    border-bottom: 1px solid #111820;
-  }
-  .subject-row:last-child { border-bottom: none; }
+/* scan-line texture */
+.hero-scan {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.04) 2px,
+    rgba(0,0,0,0.04) 4px
+  );
+  z-index: 2;
+  pointer-events: none;
+}
 
-  .subject-info { flex: 1; }
-  .subject-name { font-size: 0.82rem; color: var(--text); font-weight: 500; }
-  .subject-coeff { 
-    font-size: 0.62rem; 
-    color: var(--muted); 
-    margin-top: 0.15rem;
-  }
-  .coeff-badge {
-    display: inline-block;
-    background: rgba(0,212,255,0.08);
-    border: 1px solid rgba(0,212,255,0.2);
-    color: var(--accent);
-    border-radius: 4px;
-    padding: 0.1rem 0.4rem;
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-  }
+.hero-content {
+  position: relative;
+  z-index: 3;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  width: 100%;
+}
 
-  input[type="number"] {
-    width: 80px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.95rem;
-    padding: 0.5rem 0.6rem;
-    text-align: center;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    -moz-appearance: textfield;
-  }
-  input[type="number"]::-webkit-outer-spin-button,
-  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
-  input[type="number"]:focus { 
-    outline: none; 
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(0,212,255,0.1);
-  }
-  input[type="number"].invalid { 
-    border-color: var(--danger);
-    box-shadow: 0 0 0 2px rgba(255,71,87,0.1);
-  }
+.hero-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+}
+.hero-eyebrow-line {
+  width: 40px;
+  height: 1px;
+  background: var(--accent);
+}
+.hero-eyebrow span {
+  font-size: 0.65rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
 
-  button.submit-btn {
-    width: 100%;
-    background: var(--accent);
-    color: #080c10;
-    border: none;
-    border-radius: 8px;
-    padding: 0.9rem;
-    font-family: 'Syne', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
-    margin-top: 0.8rem;
-  }
-  button.submit-btn:hover { 
-    opacity: 0.9;
-    box-shadow: 0 0 20px rgba(0,212,255,0.3);
-  }
-  button.submit-btn:active { transform: scale(0.98); }
-  button.submit-btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+.hero-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  font-weight: 800;
+  line-height: 1.05;
+  color: #fff;
+  margin-bottom: 1rem;
+  letter-spacing: -1.5px;
+}
+.hero-title em {
+  font-style: normal;
+  color: var(--accent2);
+}
 
-  .msg {
-    text-align: center;
-    padding: 0.8rem;
-    border-radius: 8px;
-    font-size: 0.82rem;
-    margin-top: 0.8rem;
-    display: none;
-  }
-  .msg.success { background: rgba(0,255,136,0.08); color: var(--accent2); border: 1px solid rgba(0,255,136,0.2); display: block; }
-  .msg.error { background: rgba(255,71,87,0.08); color: var(--danger); border: 1px solid rgba(255,71,87,0.2); display: block; }
-  .msg.warn { background: rgba(255,167,38,0.08); color: var(--warn); border: 1px solid rgba(255,167,38,0.2); display: block; }
+.hero-subtitle {
+  font-size: 0.8rem;
+  color: var(--muted);
+  max-width: 460px;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
 
-  /* Elimination results panel — shown after submit */
-  #elimPanel {
-    display: none;
-    animation: fadeIn 0.4s ease forwards;
-  }
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--accent);
+  color: #04080f;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 0.8rem 1.8rem;
+  border-radius: 4px;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: background 0.2s, transform 0.15s;
+  border: none;
+  cursor: pointer;
+}
+.hero-cta:hover { background: var(--accent2); transform: translateY(-1px); }
 
-  .elim-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
+.hero-nav-dots {
+  position: absolute;
+  right: 2.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  z-index: 4;
+}
+.hero-nav-dots span {
+  display: block;
+  font-size: 0.6rem;
+  color: var(--muted);
+  text-align: right;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.hero-nav-dots span.active, .hero-nav-dots span:hover { color: var(--accent); }
 
-  .promo-avg-badge {
-    background: rgba(0,212,255,0.08);
-    border: 1px solid rgba(0,212,255,0.25);
-    border-radius: 8px;
-    padding: 0.6rem 1rem;
-    font-size: 0.75rem;
-    color: var(--muted);
-  }
-  .promo-avg-badge span {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: var(--accent);
-    margin-left: 0.4rem;
-  }
+/* ── NAV ── */
+.topnav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 2.5rem;
+  background: linear-gradient(to bottom, rgba(4,8,15,0.9) 0%, transparent 100%);
+  backdrop-filter: blur(4px);
+}
+.topnav-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.topnav-logo-shield {
+  width: 32px;
+  height: 36px;
+}
+.topnav-logo-text {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+.topnav-logo-text small {
+  display: block;
+  font-size: 0.55rem;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+}
+.topnav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+.topnav-links a {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+.topnav-links a:hover { color: #fff; }
 
-  .elim-threshold-badge {
-    background: rgba(255,107,53,0.08);
-    border: 1px solid rgba(255,107,53,0.25);
-    border-radius: 8px;
-    padding: 0.6rem 1rem;
-    font-size: 0.75rem;
-    color: var(--muted);
-  }
-  .elim-threshold-badge span {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: var(--accent3);
-    margin-left: 0.4rem;
-  }
+/* ── MAIN CONTENT ── */
+.main-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 2rem 6rem;
+}
 
-  .elim-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-  .elim-table thead th {
-    color: var(--muted);
-    font-weight: 500;
-    padding: 0.5rem 0.7rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.62rem;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-  .elim-table tbody td {
-    padding: 0.6rem 0.7rem;
-    border-bottom: 1px solid #111820;
-    color: var(--text);
-    transition: background 0.15s;
-  }
-  .elim-table tbody tr:last-child td { border-bottom: none; }
-  .elim-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
-  .elim-avg { color: var(--accent2); font-weight: 700; }
-  .elim-score { color: var(--accent3); font-weight: 700; }
-  .elim-coeff { color: var(--accent); }
+/* section heading */
+.section-head {
+  text-align: center;
+  margin: 4rem 0 2.5rem;
+}
+.section-head .tag {
+  font-size: 0.6rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+}
+.section-head h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+.section-head p {
+  color: var(--muted);
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+}
 
-  .students-count {
-    font-size: 0.68rem;
-    color: var(--muted);
-    margin-bottom: 0.8rem;
-  }
+/* ── MODULES GRID (like tour cards) ── */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--glass-border);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
 
-  /* Admin */
-  #adminPage { display: none; }
+.module-card {
+  background: var(--surface);
+  padding: 1.2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: background 0.2s;
+  position: relative;
+}
+.module-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.module-card:focus-within::before { opacity: 1; }
+.module-card:focus-within { background: rgba(201,168,76,0.04); }
 
-  .stats-grid { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 0.8rem; 
-    margin-bottom: 1rem; 
-  }
+.module-card-label {
+  font-size: 0.72rem;
+  color: var(--text);
+  font-weight: 500;
+  line-height: 1.4;
+}
+.module-card-coeff {
+  font-size: 0.58rem;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.module-card input[type="number"] {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  padding: 0.5rem 0.6rem;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+  -moz-appearance: textfield;
+  margin-top: 0.4rem;
+}
+.module-card input[type="number"]::-webkit-outer-spin-button,
+.module-card input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+.module-card input[type="number"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(201,168,76,0.06);
+}
+.module-card input[type="number"].invalid {
+  border-color: var(--danger);
+  background: rgba(224,82,82,0.06);
+}
 
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.1rem;
-    text-align: center;
-  }
-  .stat-card.full { grid-column: 1 / -1; }
-  .stat-card .val { 
-    font-family: 'Syne', sans-serif;
-    font-size: 1.8rem; 
-    font-weight: 800; 
-    color: var(--accent); 
-  }
-  .stat-card .val.green { color: var(--accent2); }
-  .stat-card .val.orange { color: var(--accent3); }
-  .stat-card .lbl { font-size: 0.62rem; color: var(--muted); margin-top: 0.3rem; letter-spacing: 1px; text-transform: uppercase; }
+/* ── SUBMIT AREA ── */
+.submit-area { margin-top: 2rem; }
 
-  .nav-btns { display: flex; gap: 0.6rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
-  .nav-btn {
-    padding: 0.45rem 1rem;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .nav-btn.active, .nav-btn:hover { 
-    border-color: var(--accent); 
-    color: var(--accent);
-    background: rgba(0,212,255,0.05);
-  }
+button.submit-btn {
+  width: 100%;
+  background: var(--accent);
+  color: #04080f;
+  border: none;
+  border-radius: 6px;
+  padding: 1rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.2s, transform 0.1s;
+}
+button.submit-btn:hover { background: var(--accent2); }
+button.submit-btn:active { transform: scale(0.99); }
+button.submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-  .refresh-btn {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 6px;
-    padding: 0.35rem 0.8rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem;
-    cursor: pointer;
-    margin-bottom: 1rem;
-    transition: color 0.2s;
-  }
-  .refresh-btn:hover { color: var(--text); border-color: var(--text); }
+.msg {
+  text-align: center;
+  padding: 0.9rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  margin-top: 0.8rem;
+  display: none;
+  line-height: 1.6;
+}
+.msg.success { background: rgba(77,170,128,0.08); color: var(--success); border: 1px solid rgba(77,170,128,0.25); display: block; }
+.msg.error { background: rgba(224,82,82,0.08); color: var(--danger); border: 1px solid rgba(224,82,82,0.25); display: block; }
+.msg.warn { background: rgba(212,146,58,0.08); color: var(--warn); border: 1px solid rgba(212,146,58,0.25); display: block; }
 
-  .loading { color: var(--muted); text-align: center; padding: 2rem; font-size: 0.82rem; }
+/* ── ELIM PANEL ── */
+#elimPanel { display: none; animation: fadeUp 0.5s ease forwards; }
 
-  #secretInput {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.9rem;
-    padding: 0.65rem 1rem;
-    width: 100%;
-    margin-bottom: 0.8rem;
-    transition: border-color 0.2s;
-  }
-  #secretInput:focus { outline: none; border-color: var(--accent); }
+.elim-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--glass-border);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 1px;
+}
+.elim-summary-card {
+  background: var(--surface);
+  padding: 1.2rem 1.5rem;
+  text-align: center;
+}
+.elim-summary-card .val {
+  font-family: 'Syne', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--accent2);
+}
+.elim-summary-card .val.orange { color: var(--warn); }
+.elim-summary-card .lbl {
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 0.3rem;
+}
 
-  /* Module elimination table */
-  .module-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-  .module-table thead th {
-    color: var(--muted);
-    font-weight: 500;
-    padding: 0.5rem 0.7rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-    font-size: 0.65rem;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-  .module-table tbody td { 
-    padding: 0.6rem 0.7rem; 
-    border-bottom: 1px solid #111820; 
-    color: var(--text); 
-  }
-  .module-table tbody tr:hover td { background: #0e1419; }
-  .elim-val { color: var(--accent3); font-weight: 700; }
-  .avg-val { color: var(--accent2); font-weight: 700; }
-  .coeff-col { color: var(--accent); }
+.elim-table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+}
+table.elim-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+table.elim-table thead th {
+  background: rgba(255,255,255,0.02);
+  color: var(--muted);
+  padding: 0.6rem 1rem;
+  text-align: left;
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--glass-border);
+}
+table.elim-table tbody td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  color: var(--text);
+}
+table.elim-table tbody tr:last-child td { border-bottom: none; }
+table.elim-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
+.td-avg { color: #5fc997; font-weight: 600; }
+.td-elim { color: var(--accent); font-weight: 600; }
+.td-coeff { color: var(--cyan); }
+.students-note {
+  font-size: 0.62rem;
+  color: var(--muted);
+  text-align: center;
+  margin: 0.8rem 0 2rem;
+}
 
-  /* Student details table */
-  .details-wrap { overflow-x: auto; }
-  table.details-table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
-  table.details-table thead th {
-    color: var(--muted);
-    font-weight: 500;
-    padding: 0.5rem 0.5rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-    font-size: 0.62rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  table.details-table tbody td { 
-    padding: 0.5rem 0.5rem; 
-    border-bottom: 1px solid #111820; 
-    color: var(--text); 
-  }
-  table.details-table tbody tr:hover td { background: #0e1419; }
+/* ── ADMIN LOGIN ── */
+#adminLogin { display: none; }
+.admin-login-wrap {
+  max-width: 420px;
+  margin: 6rem auto 0;
+  padding: 0 2rem;
+}
 
-  .elim-badge {
-    display: inline-block;
-    padding: 0.1rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.65rem;
-    font-weight: 700;
-  }
-  .elim-badge.pass { background: rgba(0,255,136,0.1); color: var(--accent2); }
-  .elim-badge.fail { background: rgba(255,71,87,0.1); color: var(--danger); }
+.glass-card {
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 2rem;
+}
+.card-title {
+  font-size: 0.6rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.card-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--glass-border);
+}
 
-  .footer-link {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem;
-    cursor: pointer;
-    text-decoration: underline;
-    transition: color 0.2s;
-  }
-  .footer-link:hover { color: var(--text); }
+#secretInput {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  padding: 0.7rem 1rem;
+  width: 100%;
+  margin-bottom: 0.8rem;
+  transition: border-color 0.2s;
+}
+#secretInput:focus { outline: none; border-color: var(--accent); }
 
-  @media (max-width: 500px) {
-    .stats-grid { grid-template-columns: 1fr; }
-    .stat-card.full { grid-column: 1; }
-    .elim-header { flex-direction: column; }
-  }
+/* ── ADMIN PAGE ── */
+#adminPage { display: none; }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .container > * { animation: fadeIn 0.3s ease forwards; }
+.admin-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 2rem 6rem;
+}
+.admin-header {
+  padding: 6rem 0 2rem;
+  border-bottom: 1px solid var(--glass-border);
+  margin-bottom: 2rem;
+}
+.admin-header .tag { font-size: 0.6rem; color: var(--accent); letter-spacing: 4px; text-transform: uppercase; }
+.admin-header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -1px;
+  margin-top: 0.4rem;
+}
+
+.nav-btns { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.nav-btn {
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-btn.active, .nav-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(201,168,76,0.06);
+}
+
+.refresh-btn {
+  background: none;
+  border: 1px solid var(--glass-border);
+  color: var(--muted);
+  border-radius: 4px;
+  padding: 0.3rem 0.8rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  cursor: pointer;
+  margin-bottom: 1.2rem;
+  transition: color 0.2s;
+}
+.refresh-btn:hover { color: var(--text); }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--glass-border);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+.stat-card {
+  background: var(--surface);
+  padding: 1.3rem;
+  text-align: center;
+}
+.stat-card.full { grid-column: 1 / -1; }
+.stat-card .val {
+  font-family: 'Syne', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--cyan);
+}
+.stat-card .val.green { color: var(--success); }
+.stat-card .val.orange { color: var(--warn); }
+.stat-card .lbl {
+  font-size: 0.6rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  overflow: hidden;
+  overflow-x: auto;
+}
+.loading { color: var(--muted); text-align: center; padding: 2rem; font-size: 0.8rem; }
+
+.module-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+.module-table thead th {
+  background: rgba(255,255,255,0.02);
+  color: var(--muted);
+  padding: 0.6rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--glass-border);
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.module-table tbody td { padding: 0.65rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.03); color: var(--text); }
+.module-table tbody tr:last-child td { border-bottom: none; }
+.module-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
+.elim-val { color: var(--accent); font-weight: 600; }
+.avg-val { color: #5fc997; font-weight: 600; }
+.coeff-col { color: var(--cyan); }
+
+table.details-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+table.details-table thead th {
+  background: rgba(255,255,255,0.02);
+  color: var(--muted);
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  border-bottom: 1px solid var(--glass-border);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+table.details-table tbody td { padding: 0.5rem 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.03); color: var(--text); }
+table.details-table tbody tr:last-child td { border-bottom: none; }
+table.details-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
+
+.elim-badge {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 3px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.elim-badge.pass { background: rgba(77,170,128,0.12); color: var(--success); }
+.elim-badge.fail { background: rgba(224,82,82,0.12); color: var(--danger); }
+
+/* ── FOOTER / MISC ── */
+.footer-link {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s;
+}
+.footer-link:hover { color: var(--text); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .topnav-links { display: none; }
+  .hero-nav-dots { display: none; }
+  .elim-summary { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .stat-card.full { grid-column: 1; }
+  .modules-grid { grid-template-columns: 1fr 1fr; }
+}
 </style>
 </head>
 <body>
 
-<!-- STUDENT PAGE -->
-<div id="studentPage" class="container">
-  <header>
-    <div class="tag">// CS1 · 2025–2026</div>
-    <h1>Grade Submission</h1>
-    <p>Enter your marks once — they will be saved permanently</p>
-  </header>
-
-  <div class="card">
-    <div class="card-title">Modules & Marks</div>
-    <div id="subjectsGrid"></div>
-  </div>
-
-  <button class="submit-btn" id="submitBtn" onclick="submitGrades()">Submit Grades →</button>
-  <div class="msg" id="msg"></div>
-
-  <!-- ELIMINATION RESULTS — shown after submit -->
-  <div id="elimPanel">
-    <div class="card" style="margin-top:1rem;">
-      <div class="card-title">Promo Elimination Thresholds</div>
-      <div class="elim-header">
-        <div class="promo-avg-badge">Moyenne Générale Promo<span id="promoAvgVal">—</span>/20</div>
-        <div class="elim-threshold-badge">Seuil Global (×0.6)<span id="promoElimVal">—</span></div>
-      </div>
-      <div class="students-count" id="studentsCountLabel"></div>
-      <table class="elim-table">
-        <thead>
-          <tr>
-            <th>Module</th>
-            <th>Coeff</th>
-            <th>Moy. Promo</th>
-            <th>Seuil Élim (×0.6)</th>
-          </tr>
-        </thead>
-        <tbody id="elimTableBody">
-        </tbody>
-      </table>
+<!-- NAV -->
+<nav class="topnav">
+  <div class="topnav-logo">
+    <svg class="topnav-logo-shield" viewBox="0 0 32 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 0L0 6v12c0 9.4 6.8 18.2 16 20 9.2-1.8 16-10.6 16-20V6L16 0z" fill="rgba(26,58,110,0.9)" stroke="rgba(201,168,76,0.8)" stroke-width="1.2"/>
+      <path d="M10 17l4 4 8-8" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="topnav-logo-text">
+      NHSCS
+      <small>Cybersecurity · Algiers</small>
     </div>
   </div>
+  <ul class="topnav-links">
+    <li><a href="#">Home</a></li>
+    <li><a href="#">About</a></li>
+    <li><a href="#grades-section">Grades</a></li>
+    <li><a href="#">Portal</a></li>
+  </ul>
+</nav>
 
-  <div style="text-align:center; margin-top:2rem;">
-    <button onclick="showAdminLogin()" class="footer-link">Admin Login</button>
-  </div>
+<!-- HERO -->
+<div id="studentPage">
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-scan"></div>
+
+    <div class="hero-nav-dots">
+      <span class="active">01</span>
+      <span>02</span>
+      <span>03</span>
+      <span>04</span>
+      <span>05</span>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-line"></span>
+        <span>CS1 · Academic Year 2025–2026</span>
+      </div>
+      <h1 class="hero-title">Submit Your<br><em>Grades.</em></h1>
+      <p class="hero-subtitle">
+        Enter your semester marks below. Each submission is anonymous and permanent. Results update in real time for the entire promotion.
+      </p>
+      <a href="#grades-section" class="hero-cta">
+        Enter Grades
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l6 6-6 6M1 7h12" stroke="#04080f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- GRADE FORM -->
+  <section id="grades-section" class="main-wrap">
+    <div class="section-head">
+      <div class="tag">// Semester Modules</div>
+      <h2>Enter Your Marks</h2>
+      <p>All grades are on a scale of 0–20. Coefficients are shown per module.</p>
+    </div>
+
+    <div class="modules-grid" id="subjectsGrid"></div>
+
+    <div class="submit-area">
+      <button class="submit-btn" id="submitBtn" onclick="submitGrades()">Submit Grades →</button>
+      <div class="msg" id="msg"></div>
+    </div>
+
+    <!-- ELIM PANEL -->
+    <div id="elimPanel">
+      <div class="section-head" style="margin-top:3rem;">
+        <div class="tag">// Live Results</div>
+        <h2>Promotion Elimination Thresholds</h2>
+        <p>Based on all submitted grades. Updates each time a new student submits.</p>
+      </div>
+
+      <div class="elim-summary">
+        <div class="elim-summary-card">
+          <div class="val" id="promoAvgVal">—</div>
+          <div class="lbl">Moyenne Générale Promo</div>
+        </div>
+        <div class="elim-summary-card">
+          <div class="val orange" id="promoElimVal">—</div>
+          <div class="lbl">Seuil d'Élimination Global (×0.6)</div>
+        </div>
+      </div>
+
+      <div class="elim-table-wrap">
+        <table class="elim-table">
+          <thead>
+            <tr>
+              <th>Module</th>
+              <th>Coeff</th>
+              <th>Moy. Promo</th>
+              <th>Seuil Élim (×0.6)</th>
+            </tr>
+          </thead>
+          <tbody id="elimTableBody"></tbody>
+        </table>
+      </div>
+      <div class="students-note" id="studentsCountLabel"></div>
+    </div>
+
+    <div style="text-align:center; margin-top:3rem; padding-top:2rem; border-top:1px solid var(--glass-border);">
+      <button onclick="showAdminLogin()" class="footer-link">Admin Dashboard →</button>
+    </div>
+  </section>
 </div>
 
 <!-- ADMIN LOGIN -->
-<div id="adminLogin" class="container" style="display:none;">
-  <div class="card" style="margin-top:4rem;">
-    <div class="card-title">Admin Access</div>
-    <input type="password" id="secretInput" placeholder="Password">
-    <button class="submit-btn" onclick="checkAdmin()">Login →</button>
-    <div class="msg" id="loginMsg"></div>
-    <div style="text-align:center; margin-top:1rem;">
-      <button onclick="backToStudent()" class="footer-link">← Back</button>
+<div id="adminLogin">
+  <nav class="topnav">
+    <div class="topnav-logo">
+      <div class="topnav-logo-text">NHSCS <small>Admin Access</small></div>
+    </div>
+  </nav>
+  <div class="admin-login-wrap">
+    <div class="glass-card">
+      <div class="card-title">Authenticate</div>
+      <input type="password" id="secretInput" placeholder="Admin password">
+      <button class="submit-btn" onclick="checkAdmin()">Login →</button>
+      <div class="msg" id="loginMsg"></div>
+      <div style="text-align:center; margin-top:1.2rem;">
+        <button onclick="backToStudent()" class="footer-link">← Back to Grade Submission</button>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- ADMIN PAGE -->
-<div id="adminPage" class="container">
-  <header>
-    <div class="tag">// Admin Dashboard</div>
-    <h1>Promo Stats</h1>
-  </header>
+<div id="adminPage">
+  <nav class="topnav">
+    <div class="topnav-logo">
+      <div class="topnav-logo-text">NHSCS <small>Admin Dashboard</small></div>
+    </div>
+    <button onclick="logout()" class="footer-link">Logout →</button>
+  </nav>
+  <div class="admin-wrap">
+    <div class="admin-header">
+      <div class="tag">// Admin Dashboard</div>
+      <h1>Promo Stats</h1>
+    </div>
 
-  <div class="nav-btns">
-    <button class="nav-btn active" onclick="showTab('overview', this)">Overview</button>
-    <button class="nav-btn" onclick="showTab('modules', this)">Module Stats</button>
-    <button class="nav-btn" onclick="showTab('details', this)">Students</button>
-  </div>
+    <div class="nav-btns">
+      <button class="nav-btn active" onclick="showTab('overview', this)">Overview</button>
+      <button class="nav-btn" onclick="showTab('modules', this)">Module Stats</button>
+      <button class="nav-btn" onclick="showTab('details', this)">Students</button>
+    </div>
+    <button class="refresh-btn" onclick="loadAdminData()">↻ Refresh</button>
 
-  <button class="refresh-btn" onclick="loadAdminData()">↻ Refresh</button>
-
-  <!-- OVERVIEW TAB -->
-  <div id="tab-overview">
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="val" id="totalStudents">—</div>
-        <div class="lbl">Students Submitted</div>
-      </div>
-      <div class="stat-card">
-        <div class="val green" id="overallAvg">—</div>
-        <div class="lbl">Moyenne Générale Promo</div>
-      </div>
-      <div class="stat-card full">
-        <div class="val orange" id="eliminationOverall">—</div>
-        <div class="lbl">Seuil d'Élimination Général (Moy × 0.6)</div>
+    <div id="tab-overview">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="val" id="totalStudents">—</div>
+          <div class="lbl">Students Submitted</div>
+        </div>
+        <div class="stat-card">
+          <div class="val green" id="overallAvg">—</div>
+          <div class="lbl">Moyenne Générale Promo</div>
+        </div>
+        <div class="stat-card full">
+          <div class="val orange" id="eliminationOverall">—</div>
+          <div class="lbl">Seuil d'Élimination Général (Moy × 0.6)</div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- MODULE STATS TAB -->
-  <div id="tab-modules" style="display:none;">
-    <div class="card">
-      <div class="card-title">Per-Module Averages & Elimination Scores</div>
-      <table class="module-table">
-        <thead>
-          <tr>
-            <th>Module</th>
-            <th>Coeff</th>
-            <th>Avg Promo</th>
-            <th>Élimination (×0.6)</th>
-          </tr>
-        </thead>
-        <tbody id="moduleTableBody">
-          <tr><td colspan="4" class="loading">Loading...</td></tr>
-        </tbody>
-      </table>
+    <div id="tab-modules" style="display:none;">
+      <div class="table-card">
+        <table class="module-table">
+          <thead>
+            <tr><th>Module</th><th>Coeff</th><th>Avg Promo</th><th>Élimination (×0.6)</th></tr>
+          </thead>
+          <tbody id="moduleTableBody">
+            <tr><td colspan="4" class="loading">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
 
-  <!-- STUDENT DETAILS TAB -->
-  <div id="tab-details" style="display:none;">
-    <div class="card details-wrap">
-      <div id="tableContainer" class="loading">Loading...</div>
+    <div id="tab-details" style="display:none;">
+      <div class="table-card">
+        <div id="tableContainer" class="loading">Loading...</div>
+      </div>
     </div>
-  </div>
-
-  <div style="text-align:center; margin-top:2rem;">
-    <button onclick="logout()" class="footer-link">Logout</button>
   </div>
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, serverTimestamp }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyChKq_XbmInjO_J_TxQSi9EOIpGU0_C_Ag",
-    authDomain: "notes-project-b8189.firebaseapp.com",
-    projectId: "notes-project-b8189",
-    storageBucket: "notes-project-b8189.firebasestorage.app",
-    messagingSenderId: "798391615081",
-    appId: "1:798391615081:web:80895d9f72b5b3107f6cf8"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyChKq_XbmInjO_J_TxQSi9EOIpGU0_C_Ag",
+  authDomain: "notes-project-b8189.firebaseapp.com",
+  projectId: "notes-project-b8189",
+  storageBucket: "notes-project-b8189.firebasestorage.app",
+  messagingSenderId: "798391615081",
+  appId: "1:798391615081:web:80895d9f72b5b3107f6cf8"
+};
 
-  const ADMIN_PASSWORD = "admin123";
+const ADMIN_PASSWORD = "admin123";
 
-  const SUBJECTS = [
-    { name: "Network Fundamentals", key: "net",     coeff: 5 },
-    { name: "ALSDS",                key: "alsds",   coeff: 5 },
-    { name: "Architecture",         key: "archi",   coeff: 4 },
-    { name: "Operating Systems 1",  key: "os",      coeff: 3 },
-    { name: "Algebra 1",            key: "algebra", coeff: 3 },
-    { name: "Mathematical Analysis",key: "analysis",coeff: 3 },
-    { name: "Electricity",          key: "elec",    coeff: 3 },
-    { name: "English 1",            key: "eng",     coeff: 1 },
-    { name: "Citizenship",          key: "cit",     coeff: 1 },
-    { name: "History of Algeria",   key: "hist",    coeff: 1 },
-  ];
+const SUBJECTS = [
+  { name: "Network Fundamentals", key: "net",      coeff: 5 },
+  { name: "ALSDS",                key: "alsds",    coeff: 5 },
+  { name: "Architecture",         key: "archi",    coeff: 4 },
+  { name: "Operating Systems 1",  key: "os",       coeff: 3 },
+  { name: "Algebra 1",            key: "algebra",  coeff: 3 },
+  { name: "Math Analysis",        key: "analysis", coeff: 3 },
+  { name: "Electricity",          key: "elec",     coeff: 3 },
+  { name: "English 1",            key: "eng",      coeff: 1 },
+  { name: "Citizenship",          key: "cit",      coeff: 1 },
+  { name: "History of Algeria",   key: "hist",     coeff: 1 },
+];
 
-  const TOTAL_COEFFS = SUBJECTS.reduce((s, sub) => s + sub.coeff, 0);
+const TOTAL_COEFFS = SUBJECTS.reduce((s, sub) => s + sub.coeff, 0);
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  // Build student form
-  const grid = document.getElementById('subjectsGrid');
-  SUBJECTS.forEach((sub, i) => {
-    grid.innerHTML += `
-      <div class="subject-row">
-        <div class="subject-info">
-          <div class="subject-name">${sub.name}</div>
-          <div class="subject-coeff"><span class="coeff-badge">COEFF ${sub.coeff}</span></div>
-        </div>
-        <input type="number" id="s${i}" min="0" max="20" step="0.25" placeholder="0–20">
-      </div>
-    `;
-  });
+// Build module cards
+const grid = document.getElementById('subjectsGrid');
+SUBJECTS.forEach((sub, i) => {
+  grid.innerHTML += `
+    <div class="module-card">
+      <div class="module-card-label">${sub.name}</div>
+      <div class="module-card-coeff">Coefficient · ${sub.coeff}</div>
+      <input type="number" id="s${i}" min="0" max="20" step="0.25" placeholder="/ 20">
+    </div>
+  `;
+});
 
-  // Weighted average helper
-  function weightedAvg(grades) {
-    let total = 0;
-    SUBJECTS.forEach(sub => { total += (grades[sub.key] || 0) * sub.coeff; });
-    return total / TOTAL_COEFFS;
-  }
+function weightedAvg(grades) {
+  let total = 0;
+  SUBJECTS.forEach(sub => { total += (grades[sub.key] || 0) * sub.coeff; });
+  return total / TOTAL_COEFFS;
+}
 
-  // Fetch promo stats and populate the elimination panel
-  async function loadElimPanel() {
-    try {
-      const snap = await getDocs(collection(db, 'grades'));
-      const records = [];
-      snap.forEach(doc => records.push(doc.data()));
+async function loadElimPanel() {
+  try {
+    const snap = await getDocs(collection(db, 'grades'));
+    const records = [];
+    snap.forEach(doc => records.push(doc.data()));
+    const n = records.length;
+    if (n === 0) return;
 
-      const n = records.length;
-      if (n === 0) return;
+    const subTotals = {};
+    SUBJECTS.forEach(s => subTotals[s.key] = 0);
+    records.forEach(r => { SUBJECTS.forEach(s => { subTotals[s.key] += (r.grades[s.key] || 0); }); });
 
-      const subTotals = {};
-      SUBJECTS.forEach(s => subTotals[s.key] = 0);
-      records.forEach(r => {
-        SUBJECTS.forEach(s => { subTotals[s.key] += (r.grades[s.key] || 0); });
-      });
+    const subAvgs = {};
+    SUBJECTS.forEach(s => { subAvgs[s.key] = subTotals[s.key] / n; });
 
-      const subAvgs = {};
-      SUBJECTS.forEach(s => { subAvgs[s.key] = subTotals[s.key] / n; });
+    let weightedTotal = 0;
+    SUBJECTS.forEach(s => { weightedTotal += subAvgs[s.key] * s.coeff; });
+    const promoAvg = weightedTotal / TOTAL_COEFFS;
+    const promoElim = promoAvg * 0.6;
 
-      let weightedTotal = 0;
-      SUBJECTS.forEach(s => { weightedTotal += subAvgs[s.key] * s.coeff; });
-      const promoAvg = weightedTotal / TOTAL_COEFFS;
-      const promoElim = promoAvg * 0.6;
+    document.getElementById('promoAvgVal').textContent = promoAvg.toFixed(2);
+    document.getElementById('promoElimVal').textContent = promoElim.toFixed(2);
+    document.getElementById('studentsCountLabel').textContent = `Based on ${n} submission${n > 1 ? 's' : ''} — updates live as more students submit`;
 
-      document.getElementById('promoAvgVal').textContent = promoAvg.toFixed(2);
-      document.getElementById('promoElimVal').textContent = promoElim.toFixed(2);
-      document.getElementById('studentsCountLabel').textContent = `Based on ${n} submission${n > 1 ? 's' : ''} — updates live as more students submit`;
-
-      let rows = '';
-      SUBJECTS.forEach(s => {
-        const avg = subAvgs[s.key];
-        const elim = avg * 0.6;
-        rows += `
-          <tr>
-            <td>${s.name}</td>
-            <td class="elim-coeff">${s.coeff}</td>
-            <td class="elim-avg">${avg.toFixed(2)}</td>
-            <td class="elim-score">${elim.toFixed(2)}</td>
-          </tr>
-        `;
-      });
-      document.getElementById('elimTableBody').innerHTML = rows;
-      document.getElementById('elimPanel').style.display = 'block';
-    } catch (e) { console.error('Failed to load elim panel:', e); }
-  }
-
-  // On page load: check if already submitted
-  window.addEventListener('load', () => {
-    if (localStorage.getItem('grades_submitted')) {
-      const btn = document.getElementById('submitBtn');
-      btn.disabled = true;
-      btn.textContent = 'Already Submitted ✓';
-      showMsg('msg', '✅ You have already submitted your grades from this device.', 'success');
-      SUBJECTS.forEach((_, i) => {
-        document.getElementById(`s${i}`).disabled = true;
-      });
-      // Show the elimination panel immediately
-      loadElimPanel();
-    }
-  });
-
-  window.submitGrades = async () => {
-    if (localStorage.getItem('grades_submitted')) {
-      showMsg('msg', '⚠️ You have already submitted your grades from this device.', 'warn');
-      return;
-    }
-
-    const grades = {};
-    let valid = true;
-
-    SUBJECTS.forEach((sub, i) => {
-      const inp = document.getElementById(`s${i}`);
-      const val = parseFloat(inp.value);
-      inp.classList.remove('invalid');
-      if (inp.value === '' || isNaN(val) || val < 0 || val > 20) {
-        inp.classList.add('invalid');
-        valid = false;
-      } else {
-        grades[sub.key] = val;
-      }
+    let rows = '';
+    SUBJECTS.forEach(s => {
+      const avg = subAvgs[s.key];
+      rows += `<tr>
+        <td>${s.name}</td>
+        <td class="td-coeff">${s.coeff}</td>
+        <td class="td-avg">${avg.toFixed(2)}</td>
+        <td class="td-elim">${(avg * 0.6).toFixed(2)}</td>
+      </tr>`;
     });
+    document.getElementById('elimTableBody').innerHTML = rows;
+    document.getElementById('elimPanel').style.display = 'block';
+  } catch (e) { console.error('Elim panel error:', e); }
+}
 
-    if (!valid) {
-      showMsg('msg', 'Please enter all grades between 0 and 20.', 'error');
-      return;
-    }
-
+window.addEventListener('load', () => {
+  if (localStorage.getItem('grades_submitted')) {
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
-    btn.textContent = 'Submitting...';
-
-    try {
-      const avg = weightedAvg(grades);
-      await addDoc(collection(db, 'grades'), {
-        grades,
-        weightedAvg: avg,
-        timestamp: serverTimestamp()
-      });
-      localStorage.setItem('grades_submitted', 'true');
-      showMsg('msg', `✅ Grades submitted! Your weighted average: ${avg.toFixed(2)}/20`, 'success');
-      btn.textContent = 'Already Submitted ✓';
-      SUBJECTS.forEach((_, i) => {
-        document.getElementById(`s${i}`).disabled = true;
-      });
-      // Load and show the elimination thresholds after submission
-      await loadElimPanel();
-    } catch (e) {
-      showMsg('msg', 'An error occurred. Please try again.', 'error');
-      btn.disabled = false;
-      btn.textContent = 'Submit Grades →';
-    }
-  };
-
-  window.showAdminLogin = () => {
-    document.getElementById('studentPage').style.display = 'none';
-    document.getElementById('adminLogin').style.display = 'block';
-  };
-
-  window.backToStudent = () => {
-    document.getElementById('adminLogin').style.display = 'none';
-    document.getElementById('studentPage').style.display = 'block';
-  };
-
-  window.checkAdmin = () => {
-    const pw = document.getElementById('secretInput').value;
-    if (pw === ADMIN_PASSWORD) {
-      document.getElementById('adminLogin').style.display = 'none';
-      document.getElementById('adminPage').style.display = 'block';
-      loadAdminData();
-    } else {
-      showMsg('loginMsg', 'Incorrect password.', 'error');
-    }
-  };
-
-  window.logout = () => {
-    document.getElementById('adminPage').style.display = 'none';
-    document.getElementById('studentPage').style.display = 'block';
-  };
-
-  window.loadAdminData = async () => {
-    try {
-      const snap = await getDocs(collection(db, 'grades'));
-      const records = [];
-      snap.forEach(doc => records.push(doc.data()));
-
-      const n = records.length;
-      document.getElementById('totalStudents').textContent = n;
-
-      if (n === 0) {
-        document.getElementById('overallAvg').textContent = '—';
-        document.getElementById('eliminationOverall').textContent = '—';
-        document.getElementById('moduleTableBody').innerHTML = '<tr><td colspan="4" class="loading">No data yet.</td></tr>';
-        document.getElementById('tableContainer').innerHTML = '<div class="loading">No data yet.</div>';
-        return;
-      }
-
-      const subTotals = {};
-      SUBJECTS.forEach(s => subTotals[s.key] = 0);
-      records.forEach(r => {
-        SUBJECTS.forEach(s => { subTotals[s.key] += (r.grades[s.key] || 0); });
-      });
-
-      const subAvgs = {};
-      SUBJECTS.forEach(s => { subAvgs[s.key] = subTotals[s.key] / n; });
-
-      let weightedTotal = 0;
-      SUBJECTS.forEach(s => { weightedTotal += subAvgs[s.key] * s.coeff; });
-      const promoAvg = weightedTotal / TOTAL_COEFFS;
-      const promoElim = promoAvg * 0.6;
-
-      document.getElementById('overallAvg').textContent = promoAvg.toFixed(2);
-      document.getElementById('eliminationOverall').textContent = promoElim.toFixed(2);
-
-      let moduleRows = '';
-      SUBJECTS.forEach(s => {
-        const avg = subAvgs[s.key];
-        const elim = avg * 0.6;
-        moduleRows += `
-          <tr>
-            <td>${s.name}</td>
-            <td class="coeff-col">${s.coeff}</td>
-            <td class="avg-val">${avg.toFixed(2)}</td>
-            <td class="elim-val">${elim.toFixed(2)}</td>
-          </tr>
-        `;
-      });
-      document.getElementById('moduleTableBody').innerHTML = moduleRows;
-
-      let tableHTML = `
-        <table class="details-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              ${SUBJECTS.map(s => `<th>${s.key.toUpperCase()}</th>`).join('')}
-              <th>Moy. Pond.</th>
-              <th>vs Élim</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
-      const sorted = [...records].sort((a, b) => (b.weightedAvg || 0) - (a.weightedAvg || 0));
-
-      sorted.forEach((r, idx) => {
-        const avg = r.weightedAvg || weightedAvg(r.grades);
-        const passElim = avg >= promoElim;
-        tableHTML += `<tr>
-          <td>${idx + 1}</td>
-          ${SUBJECTS.map(s => `<td>${(r.grades[s.key] || 0).toFixed(1)}</td>`).join('')}
-          <td><strong style="color:var(--accent2)">${avg.toFixed(2)}</strong></td>
-          <td><span class="elim-badge ${passElim ? 'pass' : 'fail'}">${passElim ? '✓ OK' : '✗ ELIM'}</span></td>
-        </tr>`;
-      });
-
-      tableHTML += '</tbody></table>';
-      document.getElementById('tableContainer').innerHTML = tableHTML;
-
-    } catch (e) { console.error(e); }
-  };
-
-  window.showTab = (tab, btn) => {
-    ['overview', 'modules', 'details'].forEach(t => {
-      document.getElementById(`tab-${t}`).style.display = t === tab ? 'block' : 'none';
-    });
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  };
-
-  function showMsg(id, text, type) {
-    const el = document.getElementById(id);
-    el.textContent = text;
-    el.className = `msg ${type}`;
+    btn.textContent = 'Already Submitted ✓';
+    showMsg('msg', '✅ Your grades have been recorded from this device.', 'success');
+    SUBJECTS.forEach((_, i) => { document.getElementById(`s${i}`).disabled = true; });
+    loadElimPanel();
   }
+});
+
+window.submitGrades = async () => {
+  if (localStorage.getItem('grades_submitted')) {
+    showMsg('msg', '⚠️ You have already submitted your grades from this device.', 'warn');
+    return;
+  }
+  const grades = {};
+  let valid = true;
+  SUBJECTS.forEach((sub, i) => {
+    const inp = document.getElementById(`s${i}`);
+    const val = parseFloat(inp.value);
+    inp.classList.remove('invalid');
+    if (inp.value === '' || isNaN(val) || val < 0 || val > 20) {
+      inp.classList.add('invalid');
+      valid = false;
+    } else {
+      grades[sub.key] = val;
+    }
+  });
+  if (!valid) { showMsg('msg', 'Please fill in all grades (0–20).', 'error'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+  try {
+    const avg = weightedAvg(grades);
+    await addDoc(collection(db, 'grades'), { grades, weightedAvg: avg, timestamp: serverTimestamp() });
+    localStorage.setItem('grades_submitted', 'true');
+    showMsg('msg', `✅ Grades submitted! Your weighted average: ${avg.toFixed(2)} / 20`, 'success');
+    btn.textContent = 'Already Submitted ✓';
+    SUBJECTS.forEach((_, i) => { document.getElementById(`s${i}`).disabled = true; });
+    await loadElimPanel();
+  } catch (e) {
+    showMsg('msg', 'Error submitting. Please try again.', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Submit Grades →';
+  }
+};
+
+window.showAdminLogin = () => {
+  document.getElementById('studentPage').style.display = 'none';
+  document.getElementById('adminLogin').style.display = 'block';
+};
+window.backToStudent = () => {
+  document.getElementById('adminLogin').style.display = 'none';
+  document.getElementById('studentPage').style.display = 'block';
+};
+window.checkAdmin = () => {
+  if (document.getElementById('secretInput').value === ADMIN_PASSWORD) {
+    document.getElementById('adminLogin').style.display = 'none';
+    document.getElementById('adminPage').style.display = 'block';
+    loadAdminData();
+  } else {
+    showMsg('loginMsg', 'Incorrect password.', 'error');
+  }
+};
+window.logout = () => {
+  document.getElementById('adminPage').style.display = 'none';
+  document.getElementById('studentPage').style.display = 'block';
+};
+
+window.loadAdminData = async () => {
+  try {
+    const snap = await getDocs(collection(db, 'grades'));
+    const records = [];
+    snap.forEach(doc => records.push(doc.data()));
+    const n = records.length;
+    document.getElementById('totalStudents').textContent = n;
+    if (n === 0) {
+      document.getElementById('overallAvg').textContent = '—';
+      document.getElementById('eliminationOverall').textContent = '—';
+      document.getElementById('moduleTableBody').innerHTML = '<tr><td colspan="4" class="loading">No data yet.</td></tr>';
+      document.getElementById('tableContainer').innerHTML = '<div class="loading">No data yet.</div>';
+      return;
+    }
+    const subTotals = {};
+    SUBJECTS.forEach(s => subTotals[s.key] = 0);
+    records.forEach(r => { SUBJECTS.forEach(s => { subTotals[s.key] += (r.grades[s.key] || 0); }); });
+    const subAvgs = {};
+    SUBJECTS.forEach(s => { subAvgs[s.key] = subTotals[s.key] / n; });
+    let wt = 0;
+    SUBJECTS.forEach(s => { wt += subAvgs[s.key] * s.coeff; });
+    const promoAvg = wt / TOTAL_COEFFS;
+    const promoElim = promoAvg * 0.6;
+    document.getElementById('overallAvg').textContent = promoAvg.toFixed(2);
+    document.getElementById('eliminationOverall').textContent = promoElim.toFixed(2);
+
+    let moduleRows = '';
+    SUBJECTS.forEach(s => {
+      const avg = subAvgs[s.key];
+      moduleRows += `<tr><td>${s.name}</td><td class="coeff-col">${s.coeff}</td><td class="avg-val">${avg.toFixed(2)}</td><td class="elim-val">${(avg*0.6).toFixed(2)}</td></tr>`;
+    });
+    document.getElementById('moduleTableBody').innerHTML = moduleRows;
+
+    const sorted = [...records].sort((a, b) => (b.weightedAvg || 0) - (a.weightedAvg || 0));
+    let tableHTML = `<table class="details-table"><thead><tr><th>#</th>${SUBJECTS.map(s => `<th>${s.key.toUpperCase()}</th>`).join('')}<th>Moy. Pond.</th><th>Élim</th></tr></thead><tbody>`;
+    sorted.forEach((r, idx) => {
+      const avg = r.weightedAvg || weightedAvg(r.grades);
+      const pass = avg >= promoElim;
+      tableHTML += `<tr><td>${idx+1}</td>${SUBJECTS.map(s => `<td>${(r.grades[s.key]||0).toFixed(1)}</td>`).join('')}<td><strong style="color:#5fc997">${avg.toFixed(2)}</strong></td><td><span class="elim-badge ${pass?'pass':'fail'}">${pass?'✓ OK':'✗ ELIM'}</span></td></tr>`;
+    });
+    tableHTML += '</tbody></table>';
+    document.getElementById('tableContainer').innerHTML = tableHTML;
+  } catch (e) { console.error(e); }
+};
+
+window.showTab = (tab, btn) => {
+  ['overview','modules','details'].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+};
+
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = `msg ${type}`;
+}
 </script>
 </body>
 </html>
