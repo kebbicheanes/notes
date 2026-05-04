@@ -740,10 +740,6 @@ table.details-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
       <div class="students-note" id="studentsCountLabel"></div>
     </div>
-
-    <div style="text-align:center; margin-top:3rem; padding-top:2rem; border-top:1px solid var(--glass-border);">
-      <button onclick="showAdminLogin()" class="footer-link">Admin Dashboard →</button>
-    </div>
   </section>
 </div>
 
@@ -1046,6 +1042,27 @@ function showMsg(id, text, type) {
   el.textContent = text;
   el.className = `msg ${type}`;
 }
+  
+let clickCount = 0;
+let clickTimer = null;
+
+document.addEventListener('click', (e) => {
+  const fromRight = window.innerWidth - e.clientX;
+  const fromTop = e.clientY;
+
+  if (fromRight <= 80 && fromTop <= 80) {
+    clickCount++;
+    clearTimeout(clickTimer);
+    clickTimer = setTimeout(() => { clickCount = 0; }, 1500);
+
+    if (clickCount >= 5) {
+      clickCount = 0;
+      clearTimeout(clickTimer);
+      showAdminLogin();
+    }
+  }
+});
+  
 </script>
 </body>
 </html>
