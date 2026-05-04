@@ -937,7 +937,7 @@ window.submitGrades = async () => {
   let valid = true;
   SUBJECTS.forEach((sub, i) => {
     const inp = document.getElementById(`s${i}`);
-    const val = parseFloat(inp.value);
+    const val = parseFloat(inp.value.replace(',', '.'));
     inp.classList.remove('invalid');
     if (inp.value === '' || isNaN(val) || val < 0 || val > 20) {
       inp.classList.add('invalid');
